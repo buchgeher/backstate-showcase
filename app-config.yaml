@@ -7,16 +7,7 @@ app:
   extensions:
     - page:catalog:
         config:
-          path: /catalog
-    - page:techdocs:
-        config:
-          path: /docs
-    - page:api-docs:
-        config:
-          path: /api-docs
-    - page:tech-radar:
-        config:
-          path: /tech-radar
+          path: /
 
 organization:
   name: Autonomous Delivery Robot System
@@ -35,6 +26,11 @@ backend:
   database:
     client: better-sqlite3
     connection: ':memory:'
+
+auth:
+  providers:
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
 
 techdocs:
   builder: 'local'
