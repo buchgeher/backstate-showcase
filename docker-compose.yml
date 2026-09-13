@@ -1,0 +1,15 @@
+services:
+  backstage:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backstage-architecture-showcase
+    ports:
+      - "7007:7007"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      # Live-mount architecture documentation and catalog so edits are immediate
+      - ./examples/architecture-showcase:/app/examples/architecture-showcase:ro
+      - ./app-config.yaml:/app/app-config.yaml:ro
+    restart: unless-stopped

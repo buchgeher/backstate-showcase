@@ -1,0 +1,64 @@
+asyncapi: 3.0.0
+info:
+  title: Robot Telemetry & Sensor Stream API
+  description: Event-driven pub/sub interface for real-time telemetry streaming from edge delivery robots to the fleet backend via Zenoh / Kafka.
+  version: 1.0.0
+  contact:
+    name: Edge Robotics Architecture Team
+    email: edge-robotics@delivery-robot.io
+defaultContentType: application/json
+channels:
+  robotTelemetry:
+    address: 'fleet/{robotId}/telemetry'
+    description: High-frequency telemetry stream broadcast by delivery robots during transit.
+    parameters:
+      robotId:
+        description: Unique hardware identifier of the autonomous delivery robot.
+    messages:
+      telemetryUpdate:
+        name: RobotTelemetryUpdate
+        title: Robot Telemetry Event
+        summary: Heartbeat containing robot location, battery state, obstacle sensor flags, and system health.
+        payload:
+          type: object
+          required:
+            - timestamp
+            - batteryPercent
+            - coordinates
+            - systemStatus
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+              example: "2026-09-13T12:00:00Z"
+            batteryPercent:
+              type: integer
+              minimum: 0
+              maximum: 100
+              example: 84
+            coordinates:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                  example: 48.3031
+                longitude:
+                  type: number
+                  example: 14.2906
+                speedKmh:
+                  type: number
+                  example: 5.2
+            lidarObstacleDistanceMeters:
+              type: number
+              example: 2.3
+            systemStatus:
+              type: string
+              enum: [idle, navigating, docking, emergency_stop]
+              example: "navigating"
+
+operations:
+  subscribeToTelemetry:
+    action: receive
+    channel:
+      $ref: '#/channels/robotTelemetry'
+    summary: Ingest and process telemetry events in backend analytics and routing services.

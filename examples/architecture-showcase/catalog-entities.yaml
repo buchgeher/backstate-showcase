@@ -1,0 +1,272 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: autonomous-delivery-robot
+  title: Autonomous Delivery Robot Fleet System
+  description: Overall architecture and fleet management system for autonomous delivery robots.
+spec:
+  owner: group:architecture-guild
+  domain: smart-logistics
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: robot-mission-control-service
+  title: Robot Mission Control Service
+  description: Backend fleet microservice responsible for orchestrating missions, route validation, and merchant dispatch.
+  annotations:
+    backstage.io/techdocs-ref: dir:./docs
+spec:
+  type: service
+  lifecycle: production
+  owner: group:fleet-routing-team
+  system: autonomous-delivery-robot
+  providesApis:
+    - delivery-robot-mission-api
+  consumesApis:
+    - robot-telemetry-stream-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: robot-edge-navigation-node
+  title: Robot Edge Navigation Node (ROS 2)
+  description: On-robot ROS 2 navigation stack executing real-time obstacle avoidance, path following, and sensor fusion.
+  annotations:
+    backstage.io/techdocs-ref: dir:./docs
+spec:
+  type: service
+  lifecycle: production
+  owner: group:edge-robotics-team
+  system: autonomous-delivery-robot
+  providesApis:
+    - robot-telemetry-stream-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: delivery-robot-mission-api
+  title: Delivery Robot Mission Control API (REST)
+  description: OpenAPI 3.0 specification for customer & merchant mission dispatching and lifecycle monitoring.
+spec:
+  type: openapi
+  lifecycle: production
+  owner: group:fleet-routing-team
+  system: autonomous-delivery-robot
+  definition:
+    |
+      openapi: 3.0.3
+      info:
+        title: Delivery Robot Mission Control API
+        description: RESTful API for dispatching and supervising autonomous delivery robot missions.
+        version: 1.0.0
+        contact:
+          name: Fleet Architecture Team
+          email: fleet-arch@delivery-robot.io
+      servers:
+        - url: http://localhost:8080/api/v1
+          description: Local Dev Gateway
+      paths:
+        /missions:
+          get:
+            summary: List active delivery missions
+            operationId: listMissions
+            responses:
+              '200':
+                description: A list of active missions
+                content:
+                  application/json:
+                    schema:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Mission'
+          post:
+            summary: Dispatch a robot to a new delivery mission
+            operationId: createMission
+            requestBody:
+              required: true
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/NewMissionRequest'
+            responses:
+              '202':
+                description: Mission accepted and assigned to fleet router
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Mission'
+              '400':
+                description: Invalid mission parameters
+      
+        /missions/{missionId}:
+          get:
+            summary: Get details of a specific mission
+            parameters:
+              - name: missionId
+                in: path
+                required: true
+                schema:
+                  type: string
+            responses:
+              '200':
+                description: Mission details
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Mission'
+              '404':
+                description: Mission not found
+      
+      components:
+        schemas:
+          NewMissionRequest:
+            type: object
+            required:
+              - destinationAddress
+              - cargoWeightKg
+            properties:
+              destinationAddress:
+                type: string
+                example: "Campus Softwarepark 11, Hagenberg"
+              cargoWeightKg:
+                type: number
+                example: 4.5
+              priority:
+                type: string
+                enum: [standard, express, critical]
+                default: standard
+          Mission:
+            type: object
+            properties:
+              missionId:
+                type: string
+                example: "mis-9871a"
+              assignedRobotId:
+                type: string
+                example: "robot-alpha-04"
+              status:
+                type: string
+                enum: [queued, in_transit, delivered, abort_safety]
+                example: "in_transit"
+              etaMinutes:
+                type: integer
+                example: 12
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: robot-telemetry-stream-api
+  title: Robot Telemetry & Sensor Stream (AsyncAPI)
+  description: AsyncAPI specification for high-frequency telemetry and health events streamed over Zenoh and Kafka.
+spec:
+  type: asyncapi
+  lifecycle: production
+  owner: group:edge-robotics-team
+  system: autonomous-delivery-robot
+  definition:
+    |
+      asyncapi: 3.0.0
+      info:
+        title: Robot Telemetry & Sensor Stream API
+        description: Event-driven pub/sub interface for real-time telemetry streaming from edge delivery robots to the fleet backend via Zenoh / Kafka.
+        version: 1.0.0
+        contact:
+          name: Edge Robotics Architecture Team
+          email: edge-robotics@delivery-robot.io
+      defaultContentType: application/json
+      channels:
+        robotTelemetry:
+          address: 'fleet/{robotId}/telemetry'
+          description: High-frequency telemetry stream broadcast by delivery robots during transit.
+          parameters:
+            robotId:
+              description: Unique hardware identifier of the autonomous delivery robot.
+          messages:
+            telemetryUpdate:
+              name: RobotTelemetryUpdate
+              title: Robot Telemetry Event
+              summary: Heartbeat containing robot location, battery state, obstacle sensor flags, and system health.
+              payload:
+                type: object
+                required:
+                  - timestamp
+                  - batteryPercent
+                  - coordinates
+                  - systemStatus
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2026-09-13T12:00:00Z"
+                  batteryPercent:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
+                    example: 84
+                  coordinates:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                        example: 48.3031
+                      longitude:
+                        type: number
+                        example: 14.2906
+                      speedKmh:
+                        type: number
+                        example: 5.2
+                  lidarObstacleDistanceMeters:
+                    type: number
+                    example: 2.3
+                  systemStatus:
+                    type: string
+                    enum: [idle, navigating, docking, emergency_stop]
+                    example: "navigating"
+      
+      operations:
+        subscribeToTelemetry:
+          action: receive
+          channel:
+            $ref: '#/channels/robotTelemetry'
+          summary: Ingest and process telemetry events in backend analytics and routing services.
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: architecture-guild
+  title: Architecture Guild
+  description: Enterprise and system software architects guiding technical strategy, ADRs, and tech radar.
+spec:
+  type: team
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: fleet-routing-team
+  title: Fleet Routing & Cloud Services Team
+  description: Engineers responsible for cloud fleet dispatch, REST APIs, and customer integrations.
+spec:
+  type: team
+  parent: architecture-guild
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: edge-robotics-team
+  title: Edge Robotics & Firmware Team
+  description: Robotics engineers responsible for embedded compute, ROS 2, Zenoh, and motor controls.
+spec:
+  type: team
+  parent: architecture-guild
+  children: []

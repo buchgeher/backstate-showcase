@@ -1,0 +1,57 @@
+app:
+  title: Autonomous Delivery Robot – Developer Portal
+  baseUrl: http://localhost:7007
+
+  packages: all
+
+  extensions:
+    - page:catalog:
+        config:
+          path: /catalog
+    - page:techdocs:
+        config:
+          path: /docs
+    - page:api-docs:
+        config:
+          path: /api-docs
+    - page:tech-radar:
+        config:
+          path: /tech-radar
+
+organization:
+  name: Autonomous Delivery Robot System
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+    host: 0.0.0.0
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:7007
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'local'
+  publisher:
+    type: 'local'
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+  rules:
+    - allow: [Component, System, API, Resource, Location, Group, User]
+  locations:
+    # Our Autonomous Delivery Robot Architecture Showcase Catalog
+    - type: file
+      target: /app/examples/architecture-showcase/catalog-entities.yaml
+
+permission:
+  enabled: false
