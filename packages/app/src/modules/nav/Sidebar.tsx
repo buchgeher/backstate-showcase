@@ -10,6 +10,9 @@ import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { SidebarLogo } from './SidebarLogo';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
+import LibraryBooksIcon from '@material-ui/icons/LibraryBooks';
+import ExtensionIcon from '@material-ui/icons/Extension';
+import TrackChangesIcon from '@material-ui/icons/TrackChanges';
 import { SidebarSearchModal } from '@backstage/plugin-search';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
@@ -22,8 +25,8 @@ export const SidebarContent = NavContentBlueprint.make({
       ));
 
       // Skipped items
-      nav.take('page:search'); // Using search modal instead
-      nav.take('page:notifications'); // Using NotificationsSidebarItem manually instead
+      nav.take('page:search');
+      nav.take('page:notifications');
 
       return (
         <Sidebar>
@@ -35,8 +38,9 @@ export const SidebarContent = NavContentBlueprint.make({
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
             {nav.take('page:home')}
             {nav.take('page:catalog')}
-            {nav.take('page:api-docs')}
-            {nav.take('page:techdocs')}
+            <SidebarItem icon={ExtensionIcon} to="/api-docs" text="APIs" />
+            <SidebarItem icon={LibraryBooksIcon} to="/docs" text="Docs & ADRs" />
+            <SidebarItem icon={TrackChangesIcon} to="/tech-radar" text="Tech Radar" />
             <SidebarDivider />
             <SidebarScrollWrapper>
               {nav.rest({ sortBy: 'title' })}

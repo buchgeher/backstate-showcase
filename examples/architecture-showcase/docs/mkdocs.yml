@@ -7,6 +7,3 @@ nav:
       - 'ADR-001: ROS 2 Core Middleware': adrs/001-use-ros2-robotics-middleware.md
       - 'ADR-002: Zenoh Edge-to-Cloud Telemetry': adrs/002-use-zenoh-edge-to-cloud.md
       - 'ADR-003: Contract-First API Design': adrs/003-contract-first-api-design.md
-
-plugins:
-  - techdocs-core
