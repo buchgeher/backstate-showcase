@@ -4,6 +4,13 @@ site_description: 'Architecture Documentation, ADRs, and Design Views'
 theme:
   name: 'material'
 
+plugins:
+  - techdocs-core
+  - kroki:
+      fence_prefix: ''
+      http_method: 'POST'
+      tag_format: 'img'
+
 nav:
   - 'Architecture Overview': index.md
   - 'Architecture Decision Records':

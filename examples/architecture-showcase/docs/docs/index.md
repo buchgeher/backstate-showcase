@@ -18,12 +18,12 @@ The system consists of three architectural tiers:
 
 ```mermaid
 graph LR
-    Customer[Customer Mobile App] -->|HTTPS / REST| Gateway[Cloud API Gateway]
-    Merchant[Merchant Portal] -->|HTTPS / REST| Gateway
-    Gateway --> MissionService[Mission Dispatch Service]
-    MissionService --> Kafka[(Kafka Event Bus)]
-    ZenohBridge[Zenoh Cloud Router] <--> Kafka
-    ZenohBridge <-->|Zenoh pub/sub| Robot[Edge Delivery Robot (ROS 2)]
+    Customer["Customer Mobile App"] -->|HTTPS / REST| Gateway["Cloud API Gateway"]
+    Merchant["Merchant Portal"] -->|HTTPS / REST| Gateway
+    Gateway --> MissionService["Mission Dispatch Service"]
+    MissionService --> Kafka[("Kafka Event Bus")]
+    ZenohBridge["Zenoh Cloud Router"] <--> Kafka
+    ZenohBridge <-->|Zenoh pub/sub| Robot["Edge Delivery Robot (ROS 2)"]
 ```
 
 ---

@@ -39,6 +39,7 @@ FROM node:22-bookworm-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends python3 python3-pip libsqlite3-dev mkdocs-material && \
+    pip install --break-system-packages mkdocs-techdocs-core mkdocs-kroki-plugin && \
     rm -rf /var/lib/apt/lists/*
 
 USER node
