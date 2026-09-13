@@ -2,13 +2,6 @@ app:
   title: Autonomous Delivery Robot – Developer Portal
   baseUrl: http://localhost:7007
 
-  packages: all
-
-  extensions:
-    - page:catalog:
-        config:
-          path: /
-
 organization:
   name: Autonomous Delivery Robot System
 
