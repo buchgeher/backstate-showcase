@@ -1,6 +1,9 @@
 site_name: 'Autonomous Delivery Robot Architecture'
 site_description: 'Architecture Documentation, ADRs, and Design Views'
 
+theme:
+  name: 'material'
+
 nav:
   - 'Architecture Overview': index.md
   - 'Architecture Decision Records':
